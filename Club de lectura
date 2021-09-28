@@ -1,0 +1,61 @@
+# Instalar paquete de tidyverse
+install.packages("tidyverse")
+
+# Instalamos el paquete de datos
+install.packages("datos")
+
+# Instalamos el paquete base
+install.packages("base")
+
+# Instalamos el paquete readr
+install.packages("readr")
+
+# Instalamos el paquete readr
+install.packages("ggplot")
+
+# Llamando bibliotecas
+library(tidyverse)
+library(modelr)
+library(lubridate)
+library(datos)
+options(na.action = na.warn)
+
+# Cargamos la data 
+gapminder <- readr::read_csv("https://raw.githubusercontent.com/cienciadedatos/datos-de-miercoles/master/datos/2019/2019-04-24/gapminder_es.csv")
+
+# Seleccionamos un conjunto de datos utilizando la función de filter
+# La función filter nos permite filtrar filas según una condición
+ECU <- filter(paises, pais == "Ecuador")
+
+# Utilizamos el paquete ggplot2 que incluye algunas funciones como:
+# geom_line, geom_boxplot, etc.
+# Planteamos un gráfico sencillo con ggplot, usamos la función geom_line para hacer un gráfico de lineas
+# Planteamos la evolución del pib_per_capita a través de los años en el Ecuador
+ECU %>%
+  ggplot(aes(anio, pib_per_capita)) +
+  geom_line(size=1, colour="red")
+
+# Para crear gráficos de cajas o boxplot utilizamos geom_boxplot. 
+# Este gráfico permite conocer rápidamente tanto la dispersión, como la asimetría, 
+# el centro y los datos atípicos de una variable. 
+ggplot(ECU, aes(anio, pib_per_capita)) + 
+  geom_boxplot()
+
+
+mod <- lm(esperanza_de_vida ~ anio , data = ECU)
+
+cuadricula <- ECU %>% 
+  data_grid(anio) %>% 
+  add_predictions(mod, "esperanza_de_vida")
+
+ggplot(ECU, aes(anio, esperanza_de_vida)) + 
+  geom_boxplot() +
+  geom_point(data = cuadricula, colour = "red", size = 3)
+
+
+ECU <- ECU %>% 
+  add_residuals(mod)
+ECU %>% 
+  ggplot(aes(anio, resid)) + 
+  geom_ref_line(h = 0) + 
+  geom_line()
